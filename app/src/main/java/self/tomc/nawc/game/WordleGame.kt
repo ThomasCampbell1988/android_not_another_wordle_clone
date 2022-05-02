@@ -30,14 +30,17 @@ class WordleGame(
         get() = gameState
 
     fun inputLetter(letter: Char) {
+        if (gameState.runningState != IN_PROGRESS) return
         gameState = gameState.byInputtingLetter(letter)
     }
 
     fun deleteLetter() {
+        if (gameState.runningState != IN_PROGRESS) return
         gameState = gameState.byDeletingLastLetter()
     }
 
     fun submitGuess(): GuessResult {
+        if (gameState.runningState != IN_PROGRESS) throw Exception("Cannot submit guess for completed game")
         val activeGuess = gameState.guesses.activeGuess() ?: throw Exception("Cannot submit guess if no active guesses")
         if (!activeGuess.isFull()) return GuessResult.IncompleteWord
         if ( activeGuess.asString() !== targetWord && !dictionary.contains(activeGuess.asString()) ) return GuessResult.InvalidWord

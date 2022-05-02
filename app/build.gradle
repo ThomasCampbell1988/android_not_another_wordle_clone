@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "self.tomc.nawc"
-        minSdk 21
+        minSdk 26
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -42,6 +42,14 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+sourceSets {
+    all {
+        languageSettings {
+            optIn('kotlin.RequiresOptIn')
         }
     }
 }
