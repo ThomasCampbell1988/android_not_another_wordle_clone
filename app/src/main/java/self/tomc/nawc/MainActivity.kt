@@ -1,6 +1,7 @@
 package self.tomc.nawc
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,9 +51,15 @@ fun MyApp(viewModel: WordleViewModel) {
 }
 
 @Composable
-fun Wordle(viewModel: WordleViewModel, modifier: Modifier =  Modifier) {
+fun Wordle(viewModel: WordleViewModel, modifier: Modifier = Modifier) {
 
     val gameState by viewModel.gameState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+
+    if(uiState.showInvalidWordMessage) {
+        Toast.makeText(LocalContext.current, "Word not in dictionary", Toast.LENGTH_SHORT).show()
+        viewModel.haveShownInvalidWordMessage()
+    }
 
     Surface(
         modifier = modifier.then(Modifier.fillMaxSize()),
@@ -60,7 +68,7 @@ fun Wordle(viewModel: WordleViewModel, modifier: Modifier =  Modifier) {
         Column {
             Title(stringResource(R.string.title), modifier = Modifier.fillMaxWidth())
             Divider()
-            WordleGrid(gameState.guesses, modifier = Modifier.weight(1f))
+            WordleGrid(gameState.guesses, modifier = Modifier.weight(1f), uiState.revealRow, onRevealedRow = {viewModel.haveRevealedRow()})
             KeyBoard(
                 gameState.keyBoardState,
                 onLetterClick = { char: Char -> viewModel.inputLetter(char)},
@@ -91,7 +99,7 @@ fun DefaultPreview() {
             color = MaterialTheme.colors.background
         ) {
             Wordle(viewModel = WordleViewModel(dictionaryProvider = object: DictionaryProvider{
-                override fun getWordDictionary() = listOf("APPLE", "PEARS", "MANGO", "PAPPY", "HAPPY", "ZIPPY", "GHOST")
+                override fun getWordDictionary() = listOf("APPLE", "PEARS", "MANGO", "POPPY", "HAPPY", "ZIPPY", "GHOST")
             }))
         }
     }
@@ -107,7 +115,7 @@ fun DarkThemePreview() {
             color = MaterialTheme.colors.background
         ) {
             Wordle(viewModel = WordleViewModel(dictionaryProvider = object: DictionaryProvider{
-                override fun getWordDictionary() = listOf("APPLE", "PEARS", "MANGO", "PAPPY", "HAPPY", "ZIPPY", "GHOST")
+                override fun getWordDictionary() = listOf("APPLE", "PEARS", "MANGO", "POPPY", "HAPPY", "ZIPPY", "GHOST")
             }))
         }
     }

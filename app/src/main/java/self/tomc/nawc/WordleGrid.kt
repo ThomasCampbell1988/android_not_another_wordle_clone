@@ -1,39 +1,74 @@
 package self.tomc.nawc
 
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.repeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import kotlinx.coroutines.delay
 import self.tomc.nawc.game.GuessState
 import self.tomc.nawc.game.Guesses
 import self.tomc.nawc.game.TileMatchState
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun WordleGrid(guesses: Guesses, modifier: Modifier = Modifier) {
+fun WordleGrid(guesses: Guesses, modifier: Modifier = Modifier, revealing: GuessState? = null, onRevealedRow: () -> Unit = {}) {
+    val flipAnimationTime = 800
+
+    var rotated by remember { mutableStateOf(false) }
+    var showRevealing by remember { mutableStateOf(false) }
+    rotated = revealing != null
+    showRevealing = false
+
+    val rotation by animateFloatAsState(
+        targetValue = if (rotated) 90f else 0f,
+        animationSpec = repeatable(
+            2,
+            tween(flipAnimationTime),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    LaunchedEffect(revealing) {
+        if(revealing != null) {
+            delay(flipAnimationTime.toLong())
+            showRevealing = true
+            delay(flipAnimationTime.toLong())
+            onRevealedRow()
+            showRevealing = false
+        }
+    }
+
     Surface(
         color = MaterialTheme.colors.background,
         modifier = modifier.then(Modifier.fillMaxWidth())
     ) {
         Column(verticalArrangement = Arrangement.Center) {
-            WordleRow(guesses.firstGuess)
-            WordleRow(guesses.secondGuess)
-            WordleRow(guesses.thirdGuess)
-            WordleRow(guesses.fourthGuess)
-            WordleRow(guesses.fifthGuess)
-            WordleRow(guesses.sixthGuess)
+            guesses.asList().forEach { guess ->
+                val rowModifier = if(revealing != null && guess == guesses.activeGuess()) Modifier.graphicsLayer {
+                    rotationX = rotation
+                } else Modifier
+                val guessToShow = if(revealing != null && guess == guesses.activeGuess() && showRevealing) revealing else guess
+                WordleRow(guessToShow, modifier = rowModifier)
+            }
         }
     }
 }
 
 @Composable
-fun WordleRow(guess: GuessState, modifier: Modifier = Modifier) {
+fun WordleRow(guess: GuessState, modifier: Modifier = Modifier, revealing: GuessState? = null) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier.then(Modifier.fillMaxWidth())
