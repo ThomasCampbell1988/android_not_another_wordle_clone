@@ -1,10 +1,6 @@
 package self.tomc.nawc
 
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.repeatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -22,7 +18,6 @@ import self.tomc.nawc.game.GuessState
 import self.tomc.nawc.game.Guesses
 import self.tomc.nawc.game.TileMatchState
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun WordleGrid(guesses: Guesses, modifier: Modifier = Modifier, revealing: GuessState? = null, onRevealedRow: () -> Unit = {}) {
     val flipAnimationTime = 800
@@ -36,7 +31,7 @@ fun WordleGrid(guesses: Guesses, modifier: Modifier = Modifier, revealing: Guess
         targetValue = if (rotated) 90f else 0f,
         animationSpec = repeatable(
             2,
-            tween(flipAnimationTime),
+            tween(flipAnimationTime, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         )
     )
